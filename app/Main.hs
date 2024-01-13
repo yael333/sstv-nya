@@ -1,35 +1,41 @@
 module Main where
 
-import Data.Bits (testBit)
-import Data.Int (Int32, Int8)
+import Codec.Picture
+import Encoder
+import Options.Applicative
 import Sound
 
-bit :: Bool -> [Int32]
-bit True = tone 1100 30
-bit False = tone 1300 30
+data Options = Options
+  { inputFile :: FilePath,
+    outputFile :: FilePath
+  }
 
-vox :: [Int32]
-vox =
-  tone 1900 100
-    ++ tone 1500 100
-    ++ tone 1900 300
-    ++ tone 1500 100
-    ++ tone 2300 100
-    ++ tone 1500 100
-    ++ tone 2300 100
-    ++ tone 1500 100
+options :: Parser Options
+options =
+  Options
+    <$> strOption
+      ( long "input"
+          <> short 'i'
+          <> metavar "INPUT_FILE"
+          <> help "Input image path"
+      )
+    <*> strOption
+      ( long "output"
+          <> short 'o'
+          <> metavar "OUTPUT_FILE"
+          <> help "Output wav file path"
+      )
 
-header :: Int8 -> [Int32]
-header id =
-  tone 1900 300
-    ++ tone 0 10
-    ++ tone 1900 300
-    ++ tone 1200 30
-    ++ concatMap bit (reverse [testBit id i | i <- [0 .. 6]])
-    ++ bit (odd $ toInteger id)
-    ++ tone 1200 30
-
--- Main function
 main :: IO ()
 main = do
-  makeWavFile "temp.wav" (waveData (vox ++ header 60))
+  opts <-
+    execParser $
+      info
+        (options <**> helper)
+        ( fullDesc
+            <> progDesc "A functional SSTV encoder~"
+            <> header "sstv-nya"
+        )
+
+  img <- either (error . ("Error reading image: " ++)) id <$> readImage (inputFile opts)
+  makeWavFile (outputFile opts) (waveData (martin2 $ convertRGB8 img))
