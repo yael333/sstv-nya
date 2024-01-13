@@ -5,13 +5,13 @@ import Data.WAVE
 
 -- Constants
 samplesPerSecond :: Int
-samplesPerSecond = 100000
+samplesPerSecond = 4800
 
 volumeGeneral :: Int32
-volumeGeneral = volume 0.1
+volumeGeneral = volume 0.5
 
 bitrate :: Int
-bitrate = 18
+bitrate = 32
 
 -- Function to generate tone samples
 tone :: Double -> Double -> [Int32]
@@ -28,7 +28,7 @@ toneFull ::
   -- | Volume, (maxBound :: Int32) for highest, 0 for lowest
   [Int32]
 toneFull freq samples len vol =
-  take (round $ len * fromIntegral samples) $
+  take (round $ len / 1000 * fromIntegral samples) $
     map ((round . (* fromIntegral vol)) . sin) [0.0, (freq * 2 * pi / fromIntegral samples) ..]
 
 volume :: Double -> Int32
