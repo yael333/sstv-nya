@@ -38,4 +38,5 @@ main = do
         )
 
   img <- either (error . ("Error reading image: " ++)) id <$> readImage (inputFile opts)
-  makeWavFile (outputFile opts) (waveData (martin2 $ convertRGB8 img))
+  writeAudioFile (outputFile opts) (generateSignal $ martin $ convertRGB8 img)
+  -- writeAudioFile (outputFile opts) (generateSignal (concat $ replicate 5 [(1500, 1000), (2000, 2000)]))
